@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,14 +45,15 @@ public class OrderService {
     }
 
     private Boolean getIsInStock(Order order) {
-        List<String> skuCodeList = order.getOrderLineItemsList()
+
+
+        String skuCodeParams = order.getOrderLineItemsList()
                 .stream()
-                .map(OrderLineItems::getSkuCode)
-                .toList();
+                .map(orderLineItems -> "skuCodeList=" + orderLineItems.getSkuCode()).
+        collect(Collectors.joining("&"));
 
         InventoryResponse[] inventoryResponseArray = webClient.get()
-                .uri("http://localhost:8082/api/inventory/",
-                        uriBuilder -> uriBuilder.queryParam("skuCode", skuCodeList).build())
+                .uri("http://localhost:8082/api/inventory?" + skuCodeParams)
                 .retrieve()
                 .bodyToMono(InventoryResponse[].class)
                 .block();

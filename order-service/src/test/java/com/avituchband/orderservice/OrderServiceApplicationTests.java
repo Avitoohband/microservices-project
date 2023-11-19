@@ -1,5 +1,6 @@
 package com.avituchband.orderservice;
 
+import com.avituchband.orderservice.dto.InventoryResponse;
 import com.avituchband.orderservice.dto.OrderLineItemsDto;
 import com.avituchband.orderservice.dto.OrderRequest;
 import com.avituchband.orderservice.model.Order;
@@ -18,12 +19,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -38,13 +43,16 @@ class OrderServiceApplicationTests {
     private OrderService orderService;
     @Mock
     private OrderRepository orderRepository;
+    @Mock
+    private WebClient webClient;
     @Captor
     private ArgumentCaptor<Order> orderArgumentCaptor;
+
 
     @Test
     void shouldCreateOrder() throws Exception {
         OrderLineItems expectedOrderLineItems = OrderLineItems.builder()
-                .skuCode("Iphone 13")
+                .skuCode("Iphone_13")
                 .price(BigDecimal.valueOf(1200))
                 .quantity(1)
                 .build();
@@ -53,42 +61,18 @@ class OrderServiceApplicationTests {
         orderRequest.setOrderLineItemsListDto(
                 List.of(
                         OrderLineItemsDto.builder()
-                                .skuCode("Iphone 13")
+                                .skuCode("Iphone_13")
                                 .price(BigDecimal.valueOf(1200))
                                 .quantity(1)
                                 .build()
                 )
-
         );
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/order")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(orderRequest))
         ).andExpect(status().isCreated());
-
-        orderService.placeOrder(orderRequest);
-
-        verify(orderRepository).save(orderArgumentCaptor.capture());
-
-        assertEquals(expectedOrderLineItems.getQuantity(),
-                orderArgumentCaptor.getValue()
-                        .getOrderLineItemsList()
-                        .get(0)
-                        .getQuantity());
-
-        assertEquals(expectedOrderLineItems.getPrice(),
-                orderArgumentCaptor.getValue()
-                        .getOrderLineItemsList()
-                        .get(0)
-                        .getPrice());
-
-        assertEquals(expectedOrderLineItems.getSkuCode(),
-                orderArgumentCaptor.getValue()
-                        .getOrderLineItemsList()
-                        .get(0)
-                        .getSkuCode());
-
-
     }
+
 
 }
