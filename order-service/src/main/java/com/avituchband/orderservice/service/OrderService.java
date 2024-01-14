@@ -40,8 +40,6 @@ public class OrderService {
         } else {
             throw new IllegalArgumentException("Product is not in stock, please try again later.");
         }
-
-
     }
 
     private Boolean getIsInStock(Order order) {
@@ -75,6 +73,4 @@ public class OrderService {
                 orderLineItemsDto.getQuantity()
         );
     }
-
-
 }
